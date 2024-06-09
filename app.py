@@ -8,7 +8,7 @@ from password_strength import PasswordPolicy, PasswordStats
 import numpy as np
 import joblib
 import mediapipe as mp
-from helpers import predict
+from helpers import predict, helper_predict_speech
 from werkzeug.utils import secure_filename
 import cv2, os
 import pandas as pd
@@ -55,11 +55,13 @@ policy = PasswordPolicy.from_names(
     strength=0.66
 )
 
+
 gait_model = joblib.load('gait_model.sav')
+speech_model = joblib.load('knn_model.sav')
 
 
 def allowed_file(filename):
-    allowed_extensions = {'mp4', 'avi', 'mkv', 'mov'}  # Add more extensions if needed
+    allowed_extensions = {'mp4', 'avi', 'mkv', 'mov', 'mp3', 'wav', 'flac', 'aiff'}  # Add more extensions if needed
     return '.' + filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 def sched_gait_predict(file_path, participant_mr, show_video=False):
@@ -75,6 +77,20 @@ def sched_gait_predict(file_path, participant_mr, show_video=False):
     print("Processing Ended")
     return "success"
 
+def sched_speech_predict(file_path, participant_mr):
+    df = helper_predict_speech(file_path)
+    print("These are columns ,",df.columns,len(df.columns))
+    print("Participant MR: ", participant_mr)
+    df.drop(['patient_type'], axis=1, inplace=True)
+    prediction = speech_model.predict(df)
+    print("Prediction: ", prediction[0])
+    # cur = MySQLdb.connect(**db_config).cursor()
+    # cur.execute("INSERT INTO ensemble(participant_mr, speech) VALUES (%s, %s)", (participant_mr, prediction[0]))
+    # cur.connection.commit()
+    # cur.close()
+    print("Processing Ended")
+    return "success"
+
 @scheduler.scheduled_job('interval', minutes=1)
 def pd_predict():
     cur = MySQLdb.connect(**db_config).cursor()
@@ -82,6 +98,30 @@ def pd_predict():
     data = cur.fetchall()
     cur.close()
     print("Data: ", data)
+    
+@app.route('/predict_speech', methods=['POST','GET'])
+def predict_speech():
+    if "email" in session.keys() and "password" in session.keys():
+        if request.method == 'POST':
+            file = request.files['audio']
+            print("File is ",file)
+            if 'audio' not in request.files:
+                pass
+            
+            if file.filename == '':
+                pass
+
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join('UPLOAD_FOLDER/', filename))
+                print("Process Audio is called")
+                scheduler.add_job(sched_speech_predict, 'date', run_date=dt.datetime.now() + timedelta(seconds=5), args=[os.path.join('UPLOAD_FOLDER', filename), session["participant_mr"]])
+                return render_template('add/process_audio.html', user=session['name'], process=True)
+        return render_template('add/process_audio.html', user=session['name'])
+    else:
+        flash('You must be login before accessing this page')
+        return redirect(url_for('login'))
+                
 
 @app.route('/predict_gait', methods=['POST','GET'])
 def predict_gait():
@@ -107,6 +147,11 @@ def predict_gait():
     else:
         flash('You must be login before accessing this page')
         return redirect(url_for('login'))
+    
+
+main_df = pd.DataFrame(columns=["patient_type","Jitter_rel", "Jitter_abs", "Jitter_RAP", "Jitter_PPQ", "Shim_loc", "Shim_dB",
+                                "Shim_APQ3", "Shim_APQ5", "Shi_APQ11", "hnr05", "hnr15",
+                                "hnr25"])  
 
 
 @app.route('/pres', methods=['GET', 'POST'])

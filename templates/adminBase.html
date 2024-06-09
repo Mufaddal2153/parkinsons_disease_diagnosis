@@ -79,12 +79,53 @@
   </header><!-- End Header -->
 
 
+  <div class="chat-ai">
+    <button type="button"><i class="fa-regular fa-comment"></i></button>
+</div>
+<div id="ai_side_panel" class="ai_side_panel">
+    <div class="mainChater">
+        <div class="headerDet border-bottom">
+            <div class="chatDety">
+                <div class="nameC">
+                    <p class="roomTitle m-2" id="titleFirst">AI Chat Bot</p>
+                </div>
+            </div>
+            <div class="tools">
+                <button id="ai_side_close" tooltip="Room Settings" flow="left" class="btn"><i
+                        class="fa fa-times"></i></button>
+            </div>
+        </div>
+        <div class="blackout"></div>
+        <div class="changeW chatArea px-3">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="bardai" role="tabpanel">
+                    <div class="chatMessages mx-2">
+                    </div>
+                    <div class="content_loader" style="display: none;">
+                        <img src="{{ url_for('static', filename='images') }}/typing1.gif" alt="">
+                    </div>
+                    <div class="messageBox">
+                        <div class="textA"><textarea id="message" name="message" rows="1" cols="30"
+                                placeholder="Ask me anything...." class="border shadow-none"></textarea></div>
+                        <button id="send" class="border button-s1 m-0 shadow-none" tooltip="Send" flow="left"
+                            style="background: #c0c0c0;"><i class="fa fa-3 fa-arrow-up-from-bracket"
+                                aria-hidden="true"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
   <script src="{{ url_for('static',filename='assets/vendor/purecounter/purecounter.js') }}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/glightbox/js/glightbox.min.js') }}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
   <script src="{{ url_for('static',filename='assets/vendor/php-email-form/validate.js') }}"></script>
-
+  <script   src="http://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="   crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ url_for('static',filename='assets/script.js') }}"></script>
   <!-- Template Main JS File -->
   <script src="{{ url_for('static',filename='assets/js/main.js') }}"></script>
 
